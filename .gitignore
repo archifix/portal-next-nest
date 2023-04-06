@@ -1,6 +1,8 @@
 # compiled output
 /pgdata
 .env
+.docker-compose.yml
+Dockerfile
 
 # Logs
 logs
