@@ -4,6 +4,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+	font-family: 'Roboto Regular';
+	src: url('./fonts/RobotoCondensed-Regular.ttf');
+}
+
+@font-face {
+	font-family: 'Roboto Light';
+	src: url('./fonts/RobotoCondensed-Light.ttf');
+}
+
+@font-face {
+	font-family: 'Roboto Bold';
+	src: url('./fonts/RobotoCondensed-Bold.ttf');
+}
+
 // :root {
 // 	--max-width: 1100px;
 // 	--border-radius: 12px;
