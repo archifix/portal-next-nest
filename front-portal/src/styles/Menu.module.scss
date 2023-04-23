@@ -1,0 +1,51 @@
+.navigation{
+	display: flex;
+
+	&__ul{
+		display: flex;
+		
+
+		&__item{
+			padding-right: 10px;
+			font-family: "Roboto";
+			font-weight: 500;
+			font-size: 18px;
+			border-top-width: 1px;
+			border-bottom-width: 0px;
+				--tw-divide-y-reverse: 1;
+
+			&__btn {
+				display: flex;
+				padding-right: 10px;
+				font-family: "Roboto";
+				font-weight: 500;
+				font-size: 18px;
+				border-top-width: 1px;
+				border-bottom-width: 0px;
+				--tw-divide-y-reverse: 1;
+
+				:hover{
+				// font-size: 20px;
+				font-weight: 500;
+				text-decoration-thickness: 1px;
+				text-decoration-line: underline;
+				}
+
+				}
+
+			:hover{
+				// font-size: 20px;
+				font-weight: 500;
+				text-decoration-thickness: 1px;
+				text-decoration-line: underline;
+				}
+
+		}
+			
+	
+	
+	}
+			// text-transform: uppercase;
+
+				
+}
