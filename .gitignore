@@ -1,5 +1,6 @@
 # compiled output
 /back-portal/node_modules
+/back-portal/dist
 /front-portal/node_modules
 /pgdata
 .env
