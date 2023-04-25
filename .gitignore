@@ -1,4 +1,6 @@
 # compiled output
+/back-portal/node_modules
+/front-portal/node_modules
 /pgdata
 .env
 .docker-compose.yml
