@@ -1,48 +1,43 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { CreateUserDto } from 'src/dto/create-user.dto';
+import { Body, Controller, Get, Header, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Roles } from 'src/auth/roles-auth.decorator';
-import { RolesGuard } from 'src/auth/roles.guard';
-import { AddRoleDto } from 'src/dto/add-role.dto';
-import { BanUserDto } from 'src/dto/ban-user.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { User } from './user.model';
+import { CreateUserDto } from './dto/create-user.dto';
+import { LocalAuthGuard } from 'src/auth/local.auth.guard';
+import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
+import { ApiBody, ApiOkResponse } from '@nestjs/swagger';
+import { LoginCheckResponse, LoginUserRequest, LoginUserResponse, LogoutUserResponse, SignupResponse } from './types';
 
 @Controller('users')
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(private  readonly userService: UsersService) {}
 
-  @ApiOperation({ summary: 'Создание пользователя' })
-  @ApiResponse({ status: 200, type: User })
-  @Post()
-  create(@Body() userDto: CreateUserDto) {
-    return this.userService.createUser(userDto);
+  @ApiOkResponse({type: SignupResponse})
+  @Post('/signup')
+  @HttpCode(HttpStatus.CREATED)
+  @Header('Content-type', 'application/json')
+  createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create(createUserDto)
   }
 
-  @ApiOperation({ summary: 'Получить всех пользователей' })
-  @ApiResponse({ status: 200, type: [User] })
-  @Roles('ADMIN')
-  @UseGuards(RolesGuard)
-  @Get()
-  getAll() {
-    return this.userService.getAllUsers();
+  @ApiBody({type: LoginUserRequest})
+  @ApiOkResponse({type: LoginUserResponse})
+  @Post('/login')
+  @UseGuards(LocalAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  login(@Request() req) {
+    return { user: req.user, msg: 'Logged in' }
   }
 
-  @ApiOperation({ summary: 'Выдать роль' })
-  @ApiResponse({ status: 200 })
-  @Roles('ADMIN')
-  @UseGuards(RolesGuard)
-  @Post('/role')
-  addRole(@Body() dto: AddRoleDto) {
-    return this.userService.addRole(dto);
+  @ApiOkResponse({type: LoginCheckResponse})
+  @Get('/login-check')
+  @UseGuards(AuthenticatedGuard)
+  loginCheck(@Request() req) {
+    return req.user
   }
 
-  @ApiOperation({ summary: 'Забанить пользователя' })
-  @ApiResponse({ status: 200 })
-  @Roles('ADMIN')
-  @UseGuards(RolesGuard)
-  @Post('/ban')
-  ban(@Body() dto: BanUserDto) {
-    return this.userService.ban(dto);
+  @ApiOkResponse({type: LogoutUserResponse})
+  @Get('/logout')
+  logout(@Request() req) {
+    req.session.destroy()
+    return {msg: 'Session has ended'}
   }
 }

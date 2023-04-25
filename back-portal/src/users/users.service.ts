@@ -1,60 +1,43 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { CreateUserDto } from 'src/dto/create-user.dto';
-import { RolesService } from 'src/roles/roles.service';
-import { User } from './user.model';
-import { AddRoleDto } from 'src/dto/add-role.dto';
-import { BanUserDto } from 'src/dto/ban-user.dto';
+import * as bcrypt from 'bcrypt';
+import { User } from './users.model';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User) private userRepository: typeof User,
-    private roleService: RolesService,
+    @InjectModel(User)
+    private userModel: typeof User
   ) {}
 
-  async createUser(dto: CreateUserDto) {
-    const user = await this.userRepository.create(dto);
-    const role = await this.roleService.getRoleByValue('ADMIN');
-    await user.$set('roles', [role.id]);
-    user.roles = [role];
-    return user;
+  findOne(filter: {
+    where: { id?: string; username?: string; email?: string };
+  }): Promise<User> {
+    return this.userModel.findOne({ ...filter });
   }
 
-  async getAllUsers() {
-    const users = await this.userRepository.findAll({ include: { all: true } });
-    return users;
-  }
-
-  async getUserByEmail(email: string) {
-    const user = await this.userRepository.findOne({
-      where: { email },
-      include: { all: true },
+  async create(createUserDto: CreateUserDto): Promise<User | { warningMessage: string}> {
+    const user = new User()
+    const existingByUserName = await this.findOne({ where: { username: createUserDto.username },
     });
-    return user;
-  }
+    const existingByEmail = await this.findOne({ where: { email: createUserDto.email },
+    });
 
-  async addRole(dto: AddRoleDto) {
-    const user = await this.userRepository.findByPk(dto.userId);
-    const role = await this.roleService.getRoleByValue(dto.value);
-    if (role && user) {
-      await user.$add('role', role.id);
-      return dto;
+    if (existingByUserName) {
+      return {warningMessage: 'Пользователь с таким именем уже существует'}
     }
-    throw new HttpException(
-      'Пользователь или роль не найдены',
-      HttpStatus.NOT_FOUND,
-    );
-  }
 
-  async ban(dto: BanUserDto) {
-    const user = await this.userRepository.findByPk(dto.userId);
-    if (!user) {
-      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
+    if (existingByEmail) {
+      return {warningMessage: 'Пользователь с таким email уже существует'}
     }
-    user.banned = true;
-    user.banReason = dto.banReason;
-    await user.save();
-    return user;
+
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10)
+
+    user.username = createUserDto.username
+    user.password = hashedPassword
+    user.email = createUserDto.email
+
+    return user.save()
   }
 }

@@ -1,24 +1,30 @@
+import * as session from 'express-session'
+import * as passport from 'passport'
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from './pipes/validations.pipe';
 
 async function start() {
-  const PORT = process.env.PORT || 4000;
+  const PORT = process.env.PORT
   const app = await NestFactory.create(AppModule);
+  app.use(session({
+    secret: 'keyword',
+    resave: false,
+    saveUninitialized: false,
+  }))
+  app.use(passport.initialize())
+  app.use(passport.session())
 
   const config = new DocumentBuilder()
-    .setTitle('BACKEND')
-    .setDescription('Документация REST API')
-    .setVersion('1.0.0')
-    .addTag('Archi Fix')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/docs', app, document);
+  .setTitle('Back-end server')
+  .setDescription('api documentation')
+  .setVersion('1.0')
+  .addTag('api')
+  .build()
 
-  app.useGlobalPipes(new ValidationPipe());
+  const document = SwaggerModule.createDocument(app, config)
+  SwaggerModule.setup('swagger', app, document)
 
   await app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 }
-
 start();
